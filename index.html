@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC
+"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-US">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>WebSocket Server</title>
+    <!-- build:css styles/app.css -->
+    <link rel="stylesheet" type="text/css" href="styles/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="styles/main.css">
+    <!-- endbuild -->
+    <script type="text/javascript" src="telnetAgent.js"></script>
+    <script type="text/javascript" src="sha1.js"></script>
+    <script type="text/javascript" src="http.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </head>
+  <body>
+    <div class="hero-unit">
+      <h1>WebSocket Server</h1>
+       <p>Serving you locally</p>
+       <p>
+         <div class="checkbox"><label><input type="checkbox" id="autoStart"/> Run in the background</label></div>
+         <input type="file" webkitdirectory id="directory" style="display:none"/>
+         <select id="hosts">
+           <option value="127.0.0.1">lo - 127.0.0.1</option> 
+         </select>
+         <input type="text" id="port" value="8080"/><br />
+         <button id="start" class="btn btn-primary btn-large" disabled>Start</button>
+         <button id="stop" class="btn btn-warning btn-large"  disabled>Stop</button>
+         <button id="hide" class="btn btn-success btn-large">Hide</button>
+       </p>
+    </div>
+    <pre id="logger"></pre>
+  </body>
+</html>
