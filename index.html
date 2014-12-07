@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="styles/main.css">
     <!-- endbuild -->
     <script type="text/javascript" src="telnetAgent.js"></script>
+    <script type="text/javascript" src="charset/charset.js"></script>
     <script type="text/javascript" src="sha1.js"></script>
     <script type="text/javascript" src="http.js"></script>
     <script type="text/javascript" src="index.js"></script>
@@ -32,5 +33,10 @@
        </p>
     </div>
     <pre id="logger"></pre>
+    <!-- hidden elements to convert unicode to gb2312, shift-jis, etc. -->
+    <form id="u2b_form" action="charset/u2b.htm" target="u2b_frame">
+        <input type="hidden" id="u2b_ustr" name="u2b_ustr">
+    </form>
+    <iframe id="u2b_frame" name="u2b_frame" style="display:none;"></iframe>
   </body>
 </html>

@@ -2,6 +2,8 @@
  * Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
+ *
+ * Modified by u881831 < u881831@hotmail.com > at 2014/07/14
  **/
 
 var http = function() {
@@ -361,7 +363,10 @@ HttpRequest.prototype = {
       if (this.getResponseHeader('Content-Type')) {
         type = this.getResponseHeader('Content-Type');
       } else if (url.indexOf('.') != -1) {
-        var extension = url.substr(url.indexOf('.') + 1);
+        if(url.indexOf('?') != -1)
+          var extension = url.substring(url.indexOf('.') + 1, url.indexOf('?'));
+        else
+          var extension = url.substr(url.indexOf('.') + 1);
         type = extensionTypes[extension] || type;
       }
       if(!t.httpServer.dispatchEvent('log', url))

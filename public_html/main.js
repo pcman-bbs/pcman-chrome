@@ -2,6 +2,7 @@
 
 function PCMan() {
     var canvas = document.getElementById("canvas");
+    this.prefs=new PrefHandler(this);
     this.conn=new Conn(this);
     this.view=new TermView(canvas);
     this.buf=new TermBuf(80, 24);
@@ -9,6 +10,10 @@ function PCMan() {
     this.view.setBuf(this.buf);
     this.view.setConn(this.conn);
     this.parser=new AnsiParser(this.buf);
+    this.menu=new ContextMenu(this, document.getElementById("contextmenu"));
+
+    this.setMenu();
+    this.prefs.observe(true);
 }
 
 PCMan.prototype={
@@ -18,7 +23,14 @@ PCMan.prototype={
         var port = 23;
         if(parts.length > 1)
             port=parseInt(parts[1], 10);
-        this.conn.connect(parts[0], port);
+
+        var Encoding = this.prefs.Encoding;
+        var _this = this;
+        conv.buildCache(Encoding, function(b2ustatus) {
+            oconv.buildCache(Encoding, function(u2bstatus) {
+                _this.conn.connect(parts[0], port);
+            });
+        });
     },
 
     close: function() {
@@ -28,6 +40,9 @@ PCMan.prototype={
         }
 
         this.view.removeEventListener();
+
+        removeEventListener('contextmenu', this.menu.observer, false);
+        this.prefs.observe(false);
 
         // added by Hemiola SUN 
         this.view.blinkTimeout.cancel();
@@ -78,7 +93,8 @@ PCMan.prototype={
             text = text.replace(/\n/g, '\r');
             text = text.replace(/\x1b/g, '\x15');
  
-            _this.conn.convSend(text, 'big5');
+            var charset = _this.prefs.Encoding;
+            _this.conn.convSend(text, charset);
         });
     },
 
@@ -86,13 +102,22 @@ PCMan.prototype={
         this.view.selection.selectAll();
     },
 
-    search: function() {
+    search: function(engine) {
         if(!this.view.selection.hasSelection())
             return;
         var text = this.view.selection.getText();
-        //Fixme: get search patterns from the preferences of GC
-        var searchPattern = "http://www.google.com/search?q=%s";
-        openURI(searchPattern.replace(/%s/g, encodeURIComponent(text)), true);
+
+        var search = "http://www.google.com/search?q=%s";
+        switch(engine) {
+        case 'Yahoo!':
+            search = "http://search.yahoo.com/search?ei=utf-8&fr=crmas&p=%s";
+            break;
+        case 'Bing':
+            search = "http://www.bing.com/search?setmkt=" + navigator.language + "&q=%s";
+            break;
+        default:
+        }
+        openURI(search.replace(/%s/g, encodeURIComponent(text)), true);
         this.view.selection.cancelSel(true);
     },
 
@@ -121,5 +146,31 @@ PCMan.prototype={
       } else {
           link.setAttribute("href", icon);
       }
+    },
+
+    setMenu: function() {
+        var _this = this;
+        this.menu.items['menu_copy'].action = function() { _this.copy(); };
+        this.menu.items['menu_paste'].action = function() { _this.paste(); };
+        this.menu.items['menu_selAll'].action = function() { _this.selAll(); };
+        this.menu.items['menu_search'].menu.items['search_google'].action =
+            function() { _this.search(); };
+        this.menu.items['menu_search'].menu.items['search_yahoo'].action =
+            function() { _this.search('Yahoo!'); };
+        this.menu.items['menu_search'].menu.items['search_bing'].action =
+            function() { _this.search('Bing'); };
+        this.menu.items['menu_sitepref'].action = function() {
+            var url = document.location.hash.substr(1);
+            if(!url) url = 'ptt.cc';
+            openURI('options.htm?url=' + url, true);
+        };
+
+        this.menu.oncontextmenu = function(event) {
+            var isSel = _this.view.selection.hasSelection();
+            _this.menu.items['menu_copy'].disable(!isSel);
+            _this.menu.items['menu_search'].disable(!isSel);
+        };
+
+        addEventListener('contextmenu', this.menu.observer, false);
     }
 }

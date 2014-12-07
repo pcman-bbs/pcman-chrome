@@ -540,12 +540,13 @@ TermBuf.prototype={
 
       text = text.slice(colStart, colEnd);
       var conv = this.view.conv;
+      var charset = this.view.conn.listener.prefs.Encoding;
       return text.map( function(c, col, line){
         if(!c.isLeadByte) {
           if(col >=1 && line[col-1].isLeadByte) { // second byte of DBCS char
             var prevC = line[col-1];
             var b5 = prevC.ch + c.ch;
-            return conv.convertStringToUTF8(b5, 'big5',  true);
+            return conv.convertStringToUTF8(b5, charset,  true);
           }
           else
             return c.ch;

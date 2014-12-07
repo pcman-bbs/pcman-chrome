@@ -32,10 +32,38 @@ onload = function() {
 
     server.addEventListener("request", function(req) {
       var url = req.headers.url;
-      if (url == "/")
-        url = "/index.htm";
-      // Serve the pages of this chrome application.
-      req.serveUrl("/public_html" + url);
+      var path = url;
+      var search = '';
+      if(url.indexOf("?") != -1) {
+        path = url.substr(0, url.indexOf("?"));
+        search = url.substr(url.indexOf("?"));
+      }
+      if (path.substr(-1) == "/")
+        url = path + "index.htm" + search;
+
+      var serveStr = function(url, str) {
+        req.writeHead(200, {
+          'Content-Type': 'text/plain',
+          'Content-Length': str.length
+        });
+        req.end(str);
+        logToScreen("HTTP GET " + url);
+      };
+
+      if(url == "/version") {
+        serveStr(url, chrome.runtime.getManifest().version);
+      } else if(url.indexOf("/charset/a2u.tab?charset=") == 0) {
+        a2uCache(url.substr(25), function(table) {
+          serveStr(url, table);
+        });
+      } else if(url.indexOf("/charset/u2a.tab?charset=") == 0) {
+        u2aCache(url.substr(25), function(table) {
+          serveStr(url, table);
+        });
+      } else {
+        // Serve the pages of this chrome application.
+        req.serveUrl("/public_html" + url);
+      }
       return true;
     });
 

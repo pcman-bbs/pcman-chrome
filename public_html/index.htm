@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC
 "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -7,8 +7,15 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title></title>
     <link rel="icon" href="icon/icon16.png"/>
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="stylesheet" type="text/css" href="contextmenu.css" />
+    <script type="text/javascript" src="_locales/en_US/messages.js"></script>
+    <script type="text/javascript" src="_locales/zh_TW/messages.js"></script>
     <script type="text/javascript" src="charset/converter.js"></script>
+    <script type="text/javascript" src="browserutils.js"></script>
+    <script type="text/javascript" src="prefdefault.js"></script>
+    <script type="text/javascript" src="localStoragePref.js"></script>
+    <script type="text/javascript" src="prefhandler.js"></script>
     <script type="text/javascript" src="conn.js"></script>
     <script type="text/javascript" src="drawutils.js"></script>
     <script type="text/javascript" src="termview.js"></script>
@@ -18,6 +25,7 @@
     <script type="text/javascript" src="main.js"></script>
     <script type="text/javascript" src="inputHandler.js"></script>
     <script type="text/javascript" src="app.js"></script>
+    <script type="text/javascript" src="contextmenu.js"></script>
   </head>
 
   <body id="topwin">
@@ -28,5 +36,18 @@
       </div>
     </div>
     <script type="text/javascript" src="index.js"></script>
+    <!-- context menu -->
+    <div id="contextmenu" class="menupopup">
+        <div class="menuitem" id="menu_copy"></div>
+        <div class="menuitem" id="menu_paste"></div>
+        <div class="menuitem" id="menu_selAll"></div>
+        <div class="submenu" id="menu_search"><div class="menupopup">
+            <div class="menuitem" id="search_google">Google</div>
+            <div class="menuitem" id="search_yahoo">Yahoo!</div>
+            <div class="menuitem" id="search_bing">Bing</div>
+        </div></div>
+        <div class="menuseparator"></div>
+        <div class="menuitem" id="menu_sitepref"></div>
+    </div>
   </body>
 </html>

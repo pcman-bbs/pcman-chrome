@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC
+"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="zh-TW">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link rel="icon" href="icon/icon16.png"/>
+    <link rel="stylesheet" type="text/css" href="options.css" />
+    <script type="text/javascript" src="_locales/en_US/messages.js"></script>
+    <script type="text/javascript" src="_locales/zh_TW/messages.js"></script>
+    <script type="text/javascript" src="browserutils.js"></script>
+    <script type="text/javascript" src="prefdefault.js"></script>
+    <script type="text/javascript" src="localStoragePref.js"></script>
+    <script type="text/javascript" src="preferences.js"></script>
+</head>
+
+<body>
+    <!-- HTML5 TABS CODE -->
+    <aside>
+        <fieldset>
+            <legend><label id="options_sitesetting"></label></legend>
+            <div>
+                <select id="siteList" size="18">
+                    <option id="options_default" selected="true"></option>
+                </select>
+            </div>
+            <div>
+                <button id="addSite" disabled="true">
+                    <label id="options_add"></label>
+                </button>
+                <button id="delSite" disabled="true">
+                    <label id="options_del"></label>
+                </button>
+            </div>
+        </fieldset>
+    </aside>
+    <div class="main">
+    <article class="tabs">
+        <section class="active">
+            <header id="options_general"></header>
+            <div class="content">
+                <div>
+                    <label for="Encoding" id="options_codepage"></label>
+                    <select id="datalist_Encoding">
+                        <option>big5</option>
+                        <option>gb2312</option>
+                    </select>
+                    <input id="Encoding" list="datalist_Encoding"/>
+                </div>
+            </div>
+        </section>
+        <section>
+            <header id="options_about"></header>
+            <div class="content">
+                <div>
+                    <img src="icon/icon16.png"/>
+                    <span id="appName"></span>
+                    <span id="version"></span>
+                </div>
+                <div>
+                    <label id="appDesc"></label>
+                </div>
+                <p> </p>
+                <div>
+                    <label id="options_creator"></label>
+                </div>
+                <div>
+                    <label>u881831 &lt;u881831@hotmail.com&gt;</label>
+                </div>
+                <div>
+                    <label>Hong Jen Yee &lt;pcman.tw@gmail.com&gt;</label>
+                </div>
+                <p> </p>
+                <div>
+                    <label id="options_committer"></label>
+                </div>
+                <div>
+                    <label>bootleq &lt;bootleq@gmail.com&gt;</label>
+                </div>
+                <div>
+                    <label>Kang Hao Lu &lt;http://dig.csail.mit.edu/People/kennyluck#I&gt;</label>
+                </div>
+                <div>
+                    <label>Littlebtc &lt;http://blog.littleb.tc/&gt;</label>
+                </div>
+                <div>
+                    <label>Hemiola SUN &lt;scy.hemi@gmail.com&gt;</label>
+                </div>
+                <p> </p>
+                <div>
+                    <label id="options_bbsfox"></label>
+                </div>
+                <div>
+                    <label>Ett Chung &lt;ettoolong@hotmail.com&gt;</label>
+                </div>
+                <p> </p>
+                <div>
+                    <button id="download">
+                        <label id="options_download"></label>
+                    </button>
+                    <button id="homepage">
+                        <label id="options_homepage"></label>
+                    </button>
+                    <button id="reportbug">
+                        <label id="options_reportbug"></label>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </article>
+    </div>
+    <!-- /HTML5 TABS CODE -->
+
+    <input id="submit" type="submit"/>
+
+    <script type="text/javascript" src="options.js"></script>
+</body>
+</html>
+
