@@ -8,6 +8,7 @@
     border: 1px solid #7F7F7F;
     margin: 0px;
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+    font-size: 12px;
 }
 
 .menuitem, .submenu {
@@ -17,7 +18,7 @@
     -khtml-user-select: none;
     color: inherit;
     background-color: inherit;
-    padding: 0px;
+    padding: 3px 2em;
     border: 1px solid transparent;
     margin: 0px;
 }
@@ -29,7 +30,7 @@
     -khtml-user-select: none;
     color: inherit;
     background-color: #BFBFFF;
-    padding: 0px;
+    padding: 3px 2em;
     border: 1px solid #7F7FFF;
     margin: 0px;
 }
@@ -41,7 +42,7 @@
     -khtml-user-select: none;
     color: #7F7F7F;
     background-color: inherit;
-    padding: 0px;
+    padding: 3px 2em;
     border: 1px solid transparent;
     margin: 0px;
 }
@@ -53,7 +54,7 @@
     -khtml-user-select: none;
     color: #7F7F7F;
     background-color: #BFBFBF;
-    padding: 0px;
+    padding: 3px 2em;
     border: 1px solid #7F7F7F;
     margin: 0px;
 }
@@ -61,7 +62,7 @@
 .submenu::after, .submenu_opened::after {
     content: ' ';
     position: absolute;
-    right: 2px;
+    right: 0.5em;
     width: 0px;
     height: 0px;
     margin-top: 0.4em;
@@ -73,7 +74,7 @@
 .submenu[disabled]::after, .submenu_opened[disabled]::after {
     content: ' ';
     position: absolute;
-    right: 2px;
+    right: 0.5em;
     width: 0px;
     height: 0px;
     margin-top: 0.4em;
@@ -87,7 +88,6 @@
     width: 100%
     height: 0px;
     padding: 0px;
-    border: 1px solid #BFBFBF;
-    margin-top: 1px;
-    margin-bottom: 1px;
+    border-top: 1px solid #BFBFBF;
+    margin: 2px 0px;
 }
