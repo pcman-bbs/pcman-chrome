@@ -194,7 +194,7 @@ TermBuf.prototype={
                     // FIXME: this is inefficient
                     for(var iuri=0; iuri<nuris;++iuri) {
                         var uri=uris[iuri];
-                        for(col=uri[0]; col < uri[1]; ++col)
+                        for(var col=uri[0]; col < uri[1]; ++col)
                             line[col].needUpdate=true;
                     }
                     line.uris=null;

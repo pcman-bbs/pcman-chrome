@@ -259,7 +259,7 @@ TermView.prototype={
             if(e.ctrlKey && !e.altKey && !e.shiftKey) {
                 // Ctrl + @, NUL, is not handled here
                 if( e.charCode >= 65 && e.charCode <=90 ) { // A-Z
-                    if(e.charCode = 67 && this.selection.hasSelection())
+                    if(e.charCode == 67 && this.selection.hasSelection())
                         conn.listener.copy(); // ctrl+c
                     else
                         conn.send( String.fromCharCode(e.charCode - 64) );
