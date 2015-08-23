@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="zh-TW">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title></title>
+    <title>&options_pcmanoptions;</title>
     <link rel="icon" href="icon/icon16.png"/>
     <link rel="stylesheet" type="text/css" href="options.css" />
     <script type="text/javascript" src="_locales/en_US/messages.js"></script>
@@ -13,58 +13,58 @@
     <script type="text/javascript" src="browserutils.js"></script>
     <script type="text/javascript" src="prefdefault.js"></script>
     <script type="text/javascript" src="localStoragePref.js"></script>
-    <script type="text/javascript" src="preferences.js"></script>
 </head>
 
 <body>
     <!-- HTML5 TABS CODE -->
     <aside>
         <fieldset>
-            <legend><label id="options_sitesetting"></label></legend>
+            <legend><label>&options_sitesetting;</label></legend>
             <div>
                 <select id="siteList" size="18">
-                    <option id="options_default" selected="true"></option>
+                    <option selected="true">&options_default;</option>
                 </select>
             </div>
             <div>
-                <button id="addSite" disabled="true">
-                    <label id="options_add"></label>
+                <button id="addSite">
+                    <label>&options_add;</label>
                 </button>
-                <button id="delSite" disabled="true">
-                    <label id="options_del"></label>
+                <button id="delSite">
+                    <label>&options_del;</label>
                 </button>
             </div>
         </fieldset>
     </aside>
     <div class="main">
-    <article class="tabs">
+    <article id="_0" class="tabs">
         <section class="active">
-            <header id="options_general"></header>
+            <header>&options_general;</header>
             <div class="content">
                 <div>
-                    <label for="Encoding" id="options_codepage"></label>
-                    <select id="datalist_Encoding">
+                    <label for="Encoding_0">&options_codepage;</label>
+                    <!-- FIXME: Safari support -->
+                    <datalist id="datalist_Encoding_0">
                         <option>big5</option>
                         <option>gb2312</option>
-                    </select>
-                    <input id="Encoding" list="datalist_Encoding"/>
+                    </datalist>
+                    <input id="Encoding_0" list="datalist_Encoding_0"/>
                 </div>
             </div>
         </section>
         <section>
-            <header id="options_about"></header>
+            <header>&options_about;</header>
             <div class="content">
                 <div>
                     <img src="icon/icon16.png"/>
-                    <span id="appName"></span>
-                    <span id="version"></span>
+                    <label>&appName;</label>
+                    <span class="version"></span>
                 </div>
                 <div>
-                    <label id="appDesc"></label>
+                    <label>&appDesc;</label>
                 </div>
                 <p> </p>
                 <div>
-                    <label id="options_creator"></label>
+                    <label>&options_creator;</label>
                 </div>
                 <div>
                     <label>u881831 &lt;u881831@hotmail.com&gt;</label>
@@ -74,7 +74,7 @@
                 </div>
                 <p> </p>
                 <div>
-                    <label id="options_committer"></label>
+                    <label>&options_committer;</label>
                 </div>
                 <div>
                     <label>bootleq &lt;bootleq@gmail.com&gt;</label>
@@ -90,22 +90,18 @@
                 </div>
                 <p> </p>
                 <div>
-                    <label id="options_bbsfox"></label>
+                    <label>&options_bbsfox;</label>
                 </div>
                 <div>
                     <label>Ett Chung &lt;ettoolong@hotmail.com&gt;</label>
                 </div>
                 <p> </p>
                 <div>
-                    <button id="download">
-                        <label id="options_download"></label>
-                    </button>
-                    <button id="homepage">
-                        <label id="options_homepage"></label>
-                    </button>
-                    <button id="reportbug">
-                        <label id="options_reportbug"></label>
-                    </button>
+                    <a href="&options_downloadurl;" target="_blank"><label>&options_download;</label></a>
+                    <span>&emsp;</span>
+                    <a href="http://code.google.com/p/pcmanfx/" target="_blank"><label>&options_homepage;</label></a>
+                    <span>&emsp;</span>
+                    <a href="http://code.google.com/p/pcmanfx/issues/list" target="_blank"><label>&options_reportbug;</label></a>
                 </div>
             </div>
         </section>

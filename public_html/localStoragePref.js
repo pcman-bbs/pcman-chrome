@@ -1,212 +1,91 @@
 // handle some direct access to preference
 
-function PCManOptions(callback) {
+function PCManOptions() {
     this.setupDefault = PrefDefaults;
     this.prefsKey = "PCManOptions";
-    this.storage.setListener(this);
-    if(callback) {
-        this.async = true;
-        this.asyncLoad(callback);
-    } else {
-        this.async = false;
-        this.load();
-    }
 }
 
 PCManOptions.prototype = {
-    storage: {
-        setListener: function(listener) {
-            this.listener = listener;
-        },
+    // wrappers for different apis in each browser
+    doLoad: function() {
+        return localStorage[this.prefsKey];
+    },
 
-        asyncGet: function(name, callback) {
-            chrome.storage.local.get(name, callback);
-        },
+    doSave: function(str) {
+        localStorage[this.prefsKey] = str;
+    },
 
-        get: function(name) {
-            if(localStorage[name])
-                return JSON.parse(localStorage[name]);
-            return [];
-        },
+    addObserver: function(handlerFunc) {
+        var handler = {handleEvent: handlerFunc};
+        addEventListener("storage", handler, false);
+        return handler;
+    },
 
-        set: function(name, obj) {
-            if(this.listener.async) {
-                var data = {};
-                data[name] = obj;
-                chrome.storage.local.set(data, function() {});
-            } else {
-                localStorage[name] = JSON.stringify(obj);
-            }
-        },
+    removeObserver: function(handler) {
+        removeEventListener("storage", handler, false);
+    },
 
-        addObserver: function(prefHandler, callback) {
-            var prefsKey = this.listener.prefsKey;
-            if(this.listener.async) {
-                prefHandler.handler = function(changes, namespace) {
-                    if(changes[prefsKey])
-                        callback(changes[prefsKey].newValue[0]);
-                };
-                chrome.storage.onChanged.addListener(prefHandler.handler);
-            } else {
-                prefHandler.handler = function(event) {
-                    // null for all localStoage is removed
-                    if(event.key == prefsKey || event.key == null)
-                        callback(JSON.parse(event.newValue));
+    // get pref object from the database
+    load: function() {
+        var jsonData = this.doLoad();
+        var data = [];
+        if(jsonData)
+            data = JSON.parse(jsonData);
+        // reorganize the groups
+        if(!Array.isArray(data) || data.length < 1)
+            data = [{'Name': this.setupDefault.Name}];
+        var names = {};
+        for(var i=0; i<data.length; ++i) {
+            if(!data[i] || typeof(data[i]) != 'object') {
+                if(i==0) { // modify wrong default pref
+                    data[i] = {'Name': this.setupDefault.Name};
+                } else { // remove wrong sitepref
+                    data.splice(i, 1);
+                    --i;
+                    continue;
                 }
-                addEventListener("storage", prefHandler.handler, false);
             }
-        },
-
-        removeObserver: function(prefHandler) {
-            if(this.listener.async) {
-                chrome.storage.onChanged.removeListener(prefHandler.handler);
-            } else {
-                removeEventListener("storage", prefHandler.handler, false);
-            }
-        }
-    },
-
-    asyncLoad: function(callback) {
-        if(!this.groups)
-            this.groups = [];
-        var _this = this;
-        this.storage.asyncGet(this.prefsKey, function(data) {
-            _this.load(data[_this.prefsKey] || [{}]);
-            callback(_this);
-        });
-    },
-
-    load: function(data) {
-        if(data) // async callback
-            this.groups = data;
-        else // sync
-            this.groups = this.storage.get(this.prefsKey);
-        // repair the default group
-        if(!this.groups[0]) {
-            this.copyGroup(0, null, '_override_');
-        } else if(this.groups[0].Name != this.setupDefault.Name) {
-            this.groups.unshift({});
-            this.copyGroup(0, null, '_override_');
-        }
-        for(var i=this.groups.length-1; i>=0; --i) {
-            // remove the empty group
-            if(!this.groups[i]) {
-                this.removeGroup(i);
+            if(i==0 && data[i].Name != this.setupDefault.Name) // recover default pref
+                data.unshift({'Name': this.setupDefault.Name});
+            if(i>0 && names[data[i].Name]) { // remove duplicate sitepref
+                data.splice(i, 1);
+                --i;
                 continue;
             }
-            // repair the references
-            for(var key in this.setupDefault) {
-                if(typeof(this.groups[i][key]) == "undefined")
-                    this.setVal(i, key, this.setupDefault[key]);
+            names[data[i].Name] = true;
+            for(var key in data[i]) { // remove redundant pref
+                if(typeof(this.setupDefault[key]) == 'undefined')
+                    delete data[i][key];
+            }
+            for(var key in this.setupDefault) { // modify wrong or missing pref
+                if(typeof(data[i][key]) != typeof(this.setupDefault[key]))
+                    data[i][key] = this.setupDefault[key];
             }
         }
+        // add setupDefault group
+        data.unshift({});
+        for(var key in this.setupDefault)
+            data[0][key] = this.setupDefault[key];
+        return data;
     },
 
-    save: function() {
-        this.storage.set(this.prefsKey, this.groups);
-    },
-
-    getGroupNames: function() {
-        var groups = [];
-        for(var i=0; i<this.groups.length; ++i)
-            groups[i] = this.getVal(i, 'Name', this.setupDefault.Name);
-        return groups;
-    },
-
-    // Determine the group index by the url
-    findGroup: function(url) {
-        if(!url) return 0;
-        url = url.replace(/.*:\/\/([^\/]*).*/, '$1'); // Trim the protocol
-        // search from the newest group
-        for(var i=this.groups.length-1; i>=0; --i) {
-            if(url == this.getVal(i, 'Name', null))
-                return i;
-        }
-        return 0; // Not found
-    },
-
-    getVal: function(group, key, value) {
-        if(this.groups[group] && typeof(this.groups[group][key])!='undefined') {
-            if(typeof(this.setupDefault[key]) == 'number')
-                return parseInt(this.groups[group][key]);
-            else
-                return this.groups[group][key];
-        } else {
-            return value;
-        }
-    },
-
-    setVal: function(group, key, value) {
-        if(!this.groups[group])
-            this.groups[group] = {};
-        this.groups[group][key] = value;
-    },
-
-    // Copy fromGroup to toGroup
-    // Copy from setupDefault if fromGroup is null.
-    // Add a new group if toGroup is null.
-    // The name of the copied group can be set simultaneously
-    // If the name is set as '_override_', use the name of fromGroup
-    copyGroup: function(toGroup, fromGroup, name) {
-        name = name.replace(/.*:\/\/([^\/]*).*/, '$1'); // Trim the protocol
-        if(toGroup == null)
-            toGroup = this.groups.length;
-        if(fromGroup == null)
-            var data = this.setupDefault;
-        else
-            var data = this.groups[fromGroup];
-        for(var key in data) {
-            if(key != 'Name' || name == '_override_')
-                this.setVal(toGroup, key, data[key]);
-            else if(name)
-                this.setVal(toGroup, key, name); // key == 'Name'
-        }
-    },
-
-    // Remove the group
-    // For the default group, reset to the setupDefault 
-    removeGroup: function(group) {
-        if(group == 0)
-            return this.copyGroup(0, null, '_override_');
-        this.groups.splice(group,1);
-    },
-
-    // Observer for the changes of the prefs
-
-    addObserver: function(url, prefHandler) {
-        var _this = this;
-        this.storage.addObserver(prefHandler, function(newValue) {
-            _this.sync(url, prefHandler, newValue);
-        });
-    },
-
-    removeObserver: function(prefHandler) {
-        this.storage.removeObserver(prefHandler);
-    },
-
-    sync: function(url, prefHandler, newValue, isCallback) {
-        var initial = (typeof(prefHandler.Name) == 'undefined');
-        if(!initial && newValue) {
-            this.load(newValue); // update to new prefs from the arguments
-        } else if(!initial && !this.async) {
-            this.load(); // read new prefs from the database
-        } else if(!initial && !isCallback) {
-            this.asyncLoad(function(options) {
-                options.sync(url, prefHandler, null, true);
-            });
-            return;
-        }
-        var group = this.findGroup(url);
-        for(var key in this.setupDefault) {
-            var newVal = this.getVal(group, key, this.setupDefault[key]);
-            if(newVal != prefHandler[key]) { // setting is changed
-                prefHandler[key] = newVal;
-                if(!initial && prefHandler.observer[key]) {
-                    prefHandler.observer.handler = prefHandler.observer[key];
-                    prefHandler.observer.handler(); // wrap 'this'
-                }
+    // save prefs to database
+    save: function(data) {
+        for(var i=0; i<data.length; ++i) { // compress the data size
+            for(var key in data[i]) {
+                if(key == 'Name')
+                    continue;
+                if(data[i][key] == this.setupDefault[key])
+                    delete data[i][key];
             }
         }
+        this.doSave(JSON.stringify(data));
+    },
+
+    // Determine the group name by the url
+    getGroupNameByUrl: function(url) {
+        if(!url) return '';
+        return url.replace(/.*:\/\/([^\/]*).*/, '$1'); // Trim the protocol
     }
 }
 

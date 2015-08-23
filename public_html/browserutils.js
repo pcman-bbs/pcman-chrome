@@ -15,6 +15,8 @@ function msg(str) {
 }
 
 function getSearch(search) {
+    if(!window.location.search)
+        return null;
     var parameters = {};
     decodeURIComponent(window.location.search).split(/[?|&]/).map(function(s) {
         if(s.indexOf('=') > 0)

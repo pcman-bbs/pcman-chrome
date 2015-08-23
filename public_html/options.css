@@ -81,3 +81,5 @@ input[type="number"] {
     display: table-cell;
     text-align: center;
 }
+
+.hide { display: none; }
