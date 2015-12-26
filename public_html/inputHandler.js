@@ -33,7 +33,7 @@ InputHandler.prototype = {
                 this.view.onkeyPress(e);
             }
         };
-        if(typeof(Components) !== 'undefined') // FX only
+        if(isBrowser(['Firefox'])) // FX only
             addEventListener('keypress', this.key_press, false);
         else // GC, IE, etc.
             addEventListener('keydown', this.key_press, false);
@@ -51,7 +51,7 @@ InputHandler.prototype = {
         var input = this.view.input;
         input.removeEventListener('compositionstart', this.composition_start, false);
         input.removeEventListener('compositionend', this.composition_end, false);
-        if(typeof(Components) !== 'undefined') // FX only
+        if(isBrowser(['Firefox'])) // FX only
             removeEventListener('keypress', this.key_press, false);
         else // GC, IE, etc.
             removeEventListener('keydown', this.key_press, false);

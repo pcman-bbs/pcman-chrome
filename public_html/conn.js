@@ -48,6 +48,8 @@ function Conn(listener) {
     this.state=STATE_DATA;
     this.iac_sb='';
 
+    this.ssh = null;
+
     this.oconv = oconv;
 
     this.app = new AppCom(this);
@@ -62,11 +64,33 @@ Conn.prototype={
         }
         this.isConnected = false;
 
+        // FIXME: connect to other site or port
+        var _this = (host == 'ptt.cc' && port == 22) ? this : null;
+        this.ssh = new SSH(_this, 'bbs', 'bbs', function(status, message){
+            switch(status) {
+            case 'onConnected':
+            case 'loginAccepted':
+            case 'loginDenied':
+                break;
+            case 'onDisconnect':
+                _this.close();
+                break;
+            case 'recv':
+                _this.onDataAvailable(message);
+                break;
+            case 'send':
+            default:
+                _this.send(message);
+            }
+        });
+
         this.app.connect(host, port);
     },
 
     close: function() {
         this.app.onunload();
+
+        this.ssh.close(this.listener.abnormalClose);
     },
 
     // data listener
@@ -85,6 +109,10 @@ Conn.prototype={
     onDataAvailable: function(content) {
         var data='';
         var n = content.length;
+        if(this.ssh.enable) { // use SSH
+            data = this.ssh.input(content);
+            n = 0; // bypass IAC
+        }
         for(var i = 0;i<n; ++i) {
             var ch = content[i];
             switch(this.state) {
@@ -178,13 +206,15 @@ Conn.prototype={
         var rows = 24;
         var nawsStr = String.fromCharCode(Math.floor(cols/256), cols%256, Math.floor(rows/256), rows%256).replace(/(\xff)/g,'\xff\xff');
         var rep = IAC + SB + NAWS + nawsStr + IAC + SE;
-        this.send( rep );
+        this.send(this.ssh.sendNaws(rep));
     },
 
     send: function(str) {
         // added by Hemiola SUN
         if(!this.app.ws)
             return;
+
+        str = this.ssh.output(str);
 
         if(str) {
             this.app.send(str)
