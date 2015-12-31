@@ -64,9 +64,21 @@ Conn.prototype={
         }
         this.isConnected = false;
 
-        // FIXME: connect to other site or port
-        var _this = (host == 'ptt.cc' && port == 22) ? this : null;
-        this.ssh = new SSH(_this, 'bbs', 'bbs', function(status, message){
+        var login = '';
+        var password = '';
+        if(port == 22) {
+            switch(host) {
+            case 'ptt.cc':
+            case 'ptt2.cc':
+            case 'ptt3.cc':
+                login = 'bbs';
+                password = 'bbs';
+                break;
+            default:
+            }
+        }
+        var _this = this;
+        this.ssh = new SSH(_this, login, password, function(status, message){
             switch(status) {
             case 'onConnected':
             case 'loginAccepted':
