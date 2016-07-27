@@ -1,70 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC
-"-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="zh-TW">
+<!DOCTYPE html SYSTEM "chrome://pcmanfx2/locale/pcmanoptions.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>&options_pcmanoptions;</title>
-    <link rel="icon" href="icon/icon16.png"/>
-    <link rel="stylesheet" type="text/css" href="options.css" />
+    <title>&options_pcmanoptions.label;</title>
+    <link rel="icon" href="skin/PCMan.png"/>
+    <link rel="stylesheet" type="text/css" href="skin/options.css" />
     <script type="text/javascript" src="_locales/en_US/messages.js"></script>
     <script type="text/javascript" src="_locales/zh_TW/messages.js"></script>
+    <script type="text/javascript" src="pcmanoptions.js"></script>
     <script type="text/javascript" src="browserutils.js"></script>
+    <script type="text/javascript" src="browserstorage.js"></script>
     <script type="text/javascript" src="prefdefault.js"></script>
-    <script type="text/javascript" src="localStoragePref.js"></script>
+    <script type="text/javascript" src="preferences.js"></script>
 </head>
 
 <body>
     <!-- HTML5 TABS CODE -->
     <aside>
         <fieldset>
-            <legend><label>&options_sitesetting;</label></legend>
+            <legend><label>&options_sitesetting.label;</label></legend>
             <div>
-                <select id="siteList" size="18">
-                    <option selected="true">&options_default;</option>
+                <select id="siteList" size="16">
+                    <option selected="true">&options_default.label;</option>
                 </select>
             </div>
             <div>
+                <label for="siteAddr">&options_address.label;</label>
+            </div>
+            <div>
+                <!-- 'type="search"' workarounds the TypeError in console -->
+                <input id="siteAddr" type="search"/>
+            </div>
+            <div>
                 <button id="addSite">
-                    <label>&options_add;</label>
+                    <label>&options_add.label;</label>
                 </button>
                 <button id="delSite">
-                    <label>&options_del;</label>
+                    <label>&options_del.label;</label>
                 </button>
             </div>
         </fieldset>
+        <input id="submit" type="submit"/>
     </aside>
     <div class="main">
     <article id="_0" class="tabs">
         <section class="active">
-            <header>&options_general;</header>
+            <header>&options_general.label;</header>
             <div class="content">
                 <div>
-                    <label for="Encoding_0">&options_codepage;</label>
+                    <label for="Encoding_0">&options_codepage.label;</label>
                     <!-- FIXME: Safari support -->
                     <datalist id="datalist_Encoding_0">
+                        <option>system</option>
                         <option>big5</option>
                         <option>gb2312</option>
                     </datalist>
-                    <input id="Encoding_0" list="datalist_Encoding_0"/>
+                    <input id="Encoding_0" list="datalist_Encoding_0" type="search"/>
                 </div>
             </div>
         </section>
         <section>
-            <header>&options_about;</header>
+            <header>&options_about.label;</header>
             <div class="content">
                 <div>
-                    <img src="icon/icon16.png"/>
-                    <label>&appName;</label>
+                    <img src="skin/PCMan.png"/>
+                    <label>&appName.label;</label>
                     <span class="version"></span>
                 </div>
                 <div>
-                    <label>&appDesc;</label>
+                    <label>&appDesc.label;</label>
                 </div>
                 <p> </p>
                 <div>
-                    <label>&options_creator;</label>
+                    <label>&options_creator.label;</label>
                 </div>
                 <div>
                     <label>u881831 &lt;u881831@hotmail.com&gt;</label>
@@ -74,7 +83,7 @@
                 </div>
                 <p> </p>
                 <div>
-                    <label>&options_committer;</label>
+                    <label>&options_committer.label;</label>
                 </div>
                 <div>
                     <label>bootleq &lt;bootleq@gmail.com&gt;</label>
@@ -90,26 +99,24 @@
                 </div>
                 <p> </p>
                 <div>
-                    <label>&options_bbsfox;</label>
+                    <label>&options_bbsfox.label;</label>
                 </div>
                 <div>
                     <label>Ett Chung &lt;ettoolong@hotmail.com&gt;</label>
                 </div>
                 <p> </p>
                 <div>
-                    <a href="&options_downloadurl;" target="_blank"><label>&options_download;</label></a>
-                    <span>&emsp;</span>
-                    <a href="http://code.google.com/p/pcmanfx/" target="_blank"><label>&options_homepage;</label></a>
-                    <span>&emsp;</span>
-                    <a href="http://code.google.com/p/pcmanfx/issues/list" target="_blank"><label>&options_reportbug;</label></a>
+                    <a href="&options_downloadurl.label;" target="_blank"><label>&options_download.label;</label></a>
+                    <span>&#8195;</span><!-- emsp -->
+                    <a href="http://code.google.com/p/pcmanfx/" target="_blank"><label>&options_homepage.label;</label></a>
+                    <span>&#8195;</span><!-- emsp -->
+                    <a href="http://code.google.com/p/pcmanfx/issues/list" target="_blank"><label>&options_reportbug.label;</label></a>
                 </div>
             </div>
         </section>
     </article>
     </div>
     <!-- /HTML5 TABS CODE -->
-
-    <input id="submit" type="submit"/>
 
     <script type="text/javascript" src="options.js"></script>
 </body>

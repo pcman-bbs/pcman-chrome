@@ -1,11 +1,11 @@
 var logging = {
-  DEBUG : 10,
-  INFO : 20,
-  WARNING : 30,
-  ERROR : 40,
-  CRITICAL : 50,
+  DEBUG: 10,
+  INFO: 20,
+  WARNING: 30,
+  ERROR: 40,
+  CRITICAL: 50,
 
-  log : function(level, msg) {
+  log: function(level, msg) {
     if (level == this.DEBUG) {
       debug(msg);
     } else if (level >= this.ERROR) {
@@ -23,8 +23,9 @@ CRITICAL = logging.CRITICAL;
 
 function debug(ex, level, trusted) {
   if (typeof(ex) == 'string')
-    ex = {message: ex};
+    ex = { message: ex };
   if (gDebugMode && window['console'] && window.console.log) {
     console.log("\n" + (level ? level : "Debug") + ": " + (ex.stack ? (ex.message + '\n' + ex.stack) : (ex.message ? ex.message : ex)) + "\n");
   }
 }
+

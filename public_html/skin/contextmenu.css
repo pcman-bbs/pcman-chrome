@@ -1,4 +1,5 @@
 .menupopup {
+    display: block;
     position: fixed;
     top: -1000px; /* hide by default */
     left: -1000px; /* hide by default */
@@ -12,6 +13,7 @@
 }
 
 .menuitem, .submenu {
+    display: block;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -24,6 +26,7 @@
 }
 
 .menuitem:hover, .submenu:hover, .submenu_opened {
+    display: block;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -36,6 +39,7 @@
 }
 
 .menuitem[disabled], .submenu[disabled] {
+    display: block;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -48,6 +52,7 @@
 }
 
 .menuitem[disabled]:hover, .submenu[disabled]:hover {
+    display: block;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -84,6 +89,7 @@
 }
 
 .menuseparator {
+    display: block;
     box-sizing: border-box;
     width: 100%
     height: 0px;
@@ -91,3 +97,4 @@
     border-top: 1px solid #BFBFBF;
     margin: 2px 0px;
 }
+

@@ -2,36 +2,44 @@
 // SSH function is implemented by paramekojs with LGPL 2.0 by Mime Cuvalo
 // https://github.com/mimecuvalo/paramikojs
 
-function SSH(conn, login, password, callback) {
-    if(!conn) // use unencrypted connection
+'use strict';
+
+var EXPORTED_SYMBOLS = ["SSH"];
+
+function SSH(conn) {
+    if (!conn) // use unencrypted connection
         return;
     this.enable = true;
     this.sendRaw = false;
     this.recvRaw = false;
-    this.listener = conn;
-    this.callback = callback;
+    this.callback = null;
 
     this.host = conn.host;
     this.port = conn.port;
     this.keepAlive = null;
 
-    this.login = login;
-    this.password = password;
+    this.login = ''; // to be override
+    this.password = ''; // to be override
     this.loginStr = '';
     this.passStr = '';
 
     this.banner = '';
 
     this.privatekey = '';
-    this.width = conn.listener.prefs.Cols;
-    this.height = conn.listener.prefs.Rows;
+    this.width = 80; // to be override
+    this.height = 24; // to be overfide
 
+    this.lib = conn.listener.global.paramikojs;
+    this.getLocalFilePath = function(filename) {
+        return conn.listener.ui.getLocalFilePath(filename);
+    };
     this.transport = null;
     this.client = null;
     this.shell = null;
+    this.bufferOut = '';
 }
 
-SSH.prototype={
+SSH.prototype = {
     initial: function() {
         var self = this;
         var shell_success = function(shell) {
@@ -39,15 +47,9 @@ SSH.prototype={
             self.callback('loginAccepted'); // userPass accepted
         };
 
-        this.client = new paramikojs.SSHClient();
-        this.client.set_missing_host_key_policy(new paramikojs.AutoAddPolicy());
-        var host_keys = 'known_hosts';
-        if ((Components && Components.classes)) { // Mozilla
-            var file = Components.classes["@mozilla.org/file/directory_service;1"].createInstance(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsILocalFile);
-            file.append(host_keys);
-            host_keys = file.path;
-        }
-        this.client.load_host_keys(host_keys);
+        this.client = new this.lib.SSHClient();
+        this.client.set_missing_host_key_policy(new this.lib.AskPolicy());
+        this.client.load_host_keys(this.getLocalFilePath('known_hosts'));
 
         var auth_success = function() {
             self.client.invoke_shell('xterm-256color', self.width, self.height, shell_success);
@@ -59,24 +61,38 @@ SSH.prototype={
             self.sendRaw = false;
         };
 
-        this.transport = this.client.connect(
-            {version: '20141113', onSftpCache: function(buffer, new_key, cacheCallback) {cacheCallback('n');}},
+        this.transport = this.client.connect({
+                version: '20141113',
+                onSftpCache: function(buffer, new_key, cacheCallback) {
+                    cacheCallback('n');
+                }
+            },
             // This version of paramekojs is committed at 2014/11/13
             // 'y': cache key; 'n': don't cache; '': don't connect
-            write, auth_success, this.host, this.port, 
+            write, auth_success, this.host, this.port,
             this.login, this.password, null, this.privatekey);
     },
 
     recv: function() { // for asyncRead, not used yet
         var str = this.input();
+        if (!str)
+            return;
         this.recvRaw = true;
         this.callback('recv', str);
         this.recvRaw = false;
-        // TODO: recall this func periodically to imitate Firessh, should it?
+    },
+
+    send: function() { // for asyncWrite, not used yet
+        var str = this.output();
+        if (!str)
+            return;
+        this.sendRaw = true;
+        this.callback('send', str);
+        this.sendRaw = false;
     },
 
     isUserPassReady: function(s) {
-        if(this.login && this.password)
+        if (this.login && this.password)
             return true;
 
         var _this = this;
@@ -86,66 +102,66 @@ SSH.prototype={
             _this.recvRaw = false;
         };
 
-        if(!this.login) {
-            if(!this.loginStr)
+        if (!this.login) {
+            if (!this.loginStr)
                 screen('\x1b[m\x1b[2Jlogin as: ');
-            switch(s) {
-            case '\r': // Enter
-                if(!this.loginStr) {
-                    this.callback('onDisconnect');
+            switch (s) {
+                case '\r': // Enter
+                    if (!this.loginStr) {
+                        this.callback('onDisconnect');
+                        return false;
+                    }
+                    this.login = this.loginStr;
+                    this.loginStr = '';
+                    screen('\r\n' + this.login + '@' + this.host + '\'s password:');
                     return false;
-                }
-                this.login = this.loginStr;
-                this.loginStr = '';
-                screen('\r\n'+this.login+'@'+this.host+'\'s password:');
-                return false;
-            case '\b': // Back
-                this.loginStr = this.loginStr.replace(/.$/,'');
-                screen('\b\x1b[K');
-                return false;
-            default:
-                if(s.search(/[^0-9A-z_a-z]/) > -1) // Not supported char
+                case '\b': // Back
+                    this.loginStr = this.loginStr.replace(/.$/, '');
+                    screen('\b\x1b[K');
                     return false;
-                this.loginStr += s;
-                screen(s);
-                return false;
+                default:
+                    if (s.search(/[^0-9A-z_a-z]/) > -1) // Not supported char
+                        return false;
+                    this.loginStr += s;
+                    screen(s);
+                    return false;
             }
         }
 
-        switch(s) {
-        case '\r': // Enter
-            if(!this.passStr) {
-                this.login = '';
-                screen('\x1b[m\x1b[2Jlogin as: ');
+        switch (s) {
+            case '\r': // Enter
+                if (!this.passStr) {
+                    this.login = '';
+                    screen('\x1b[m\x1b[2Jlogin as: ');
+                    return false;
+                }
+                this.password = this.passStr;
+                this.passStr = '';
+                screen('\x1b[2J');
+                return true;
+            case '\b': // Back
+                this.passStr = this.passStr.replace(/.$/, '');
                 return false;
-            }
-            this.password = this.passStr;
-            this.passStr = '';
-            screen('\x1b[2J');
-            return true;
-        case '\b': // Back
-            this.passStr = this.passStr.replace(/.$/,'');
-            return false;
-        default:
-            if(s.search(/[^0-9A-z_a-z]/) > -1) // Not supported char
+            default:
+                if (s.search(/[^0-9A-z_a-z]/) > -1) // Not supported char
+                    return false;
+                this.passStr += s;
                 return false;
-            this.passStr += s;
-            return false;
         }
     },
 
     isSSH: function(str) {
         this.banner += str;
         str = this.banner;
-        if(!str)
+        if (!str)
             return '';
-        if(str.length < 9 && str.search(/[^0-9A-z_a-z\-]/) == -1) {
-            if(str.length >= 4 && str.substr(0, 4) == 'SSH-')
+        if (str.length < 9 && str.search(/[^0-9A-z_a-z\-]/) == -1) {
+            if (str.length >= 4 && str.substr(0, 4) == 'SSH-')
                 return '';
-            if(str.length < 4 && str == ('SSH-').substr(0, str.length))
+            if (str.length < 4 && str == ('SSH-').substr(0, str.length))
                 return '';
         }
-        if(str.indexOf('SSH-2.0-') != 0 && str.indexOf('SSH-1.99-') != 0) {
+        if (str.indexOf('SSH-2.0-') != 0 && str.indexOf('SSH-1.99-') != 0) {
             this.enable = false; // use unencrypted connection
             this.callback('recv', str);
             return '';
@@ -154,17 +170,17 @@ SSH.prototype={
     },
 
     input: function(str) {
-        if(!this.enable || this.recvRaw)
+        if (!this.enable || this.recvRaw)
             return str;
-        if(!this.client) {
+        if (!this.client) {
             str = this.isSSH(str);
-            if(!str || !this.isUserPassReady(''))
+            if (!str || !this.isUserPassReady(''))
                 return ''; // waiting next message or unencrypted connection
             this.banner = '';
             this.initial();
         }
         try {
-            this.transport.fullBuffer += str;  // read data
+            this.transport.fullBuffer += str; // read data
 
             if (!this.gotWelcomeMessage && this.transport.fullBuffer.indexOf('\n') == this.transport.fullBuffer.length - 1) {
                 this.callback('onConnected');
@@ -175,8 +191,8 @@ SSH.prototype={
 
             if (!this.shell) // authorizing
                 return '';
-        } catch(ex) {
-            if (ex instanceof paramikojs.ssh_exception.AuthenticationException) {
+        } catch (ex) {
+            if (ex instanceof this.lib.ssh_exception.AuthenticationException) {
                 this.client.legitClose = true;
                 this.callback('loginDenied', ex.message); // userPass denied
                 return '';
@@ -192,62 +208,99 @@ SSH.prototype={
                 return '';
             }
             stdin = this.shell.recv(65536);
-            while(true) // break as data are read thoroughly
+            while (this.shell.recv_ready()) // break as data are read thoroughly
                 stdin += this.shell.recv(65536);
-        } catch(ex) {
-            if (ex instanceof paramikojs.ssh_exception.WaitException) {
-                // data are read thoroughly
+        } catch (ex) {
+            if (ex instanceof this.lib.ssh_exception.WaitException) {
+                // fall through to get stderr message
             } else {
-               throw(ex);
+                throw (ex);
             }
         }
 
         var stderr = '';
         try {
             stderr = this.shell.recv_stderr(65536);
-            while(true) // break as data are read thoroughly
+            while (this.shell.recv_stderr_ready()) // break as data are read thoroughly
                 stderr += this.shell.recv_stderr(65536);
-        } catch(ex) {
-            if (ex instanceof paramikojs.ssh_exception.WaitException) {
-                // data are read thoroughly
+        } catch (ex) {
+            if (ex instanceof this.lib.ssh_exception.WaitException) {
+                // fall through for data are read thoroughly
             } else {
-               throw(ex);
+                throw (ex);
             }
         }
-        var logger = paramikojs.util.get_logger();
-        logger.log(null, 'STDERR: ' + stderr);
-
-        if (stdin) {
-            return stdin;
+        if (stderr) {
+            var logger = this.lib.util.get_logger();
+            logger.log(null, 'STDERR: ' + stderr);
         }
-        return '';
+
+        // TODO: call this.recv() after a certain interval
+        // Maybe the received data is splitted, but
+        // the last part may flush this.shell.in_buffer
+
+        return stdin ? stdin : '';
     },
 
     output: function(str) {
-        if(!this.enable || this.sendRaw)
+        if (!this.enable || this.sendRaw)
             return str;
-        if(!this.client) {
-            if(this.isUserPassReady(str))
+        if (!this.client) {
+            if (this.isUserPassReady(str))
                 this.input('');
             return '';
         }
-        if(str)
-            this.shell.send(str);
+        this.bufferOut += str;
+        while (this.bufferOut.length > 0) {
+            try {
+                var n = this.shell.send(this.bufferOut);
+            } catch (ex) {
+                if (ex instanceof this.lib.ssh_exception.WaitException) {
+                    // TODO: call this.send() after a certain interval
+                    // or when this.transport.clear_to_send becomes true
+                    // Maybe key negotiation, traffic is paused both ways
+                    // when the session hits a certain number of packets or
+                    // bytes sent or received, remote side will renegotiate
+                    /*
+                    var _this = this;
+                    var clear_to_send = this.transport.clear_to_send;
+                    Object.defineProperty(this.transport, 'clear_to_send', {
+                        get: function() { return clear_to_send; },
+                        set: function(newValue) {
+                            clear_to_send = newValue;
+                            if (clear_to_send && _this.bufferOut.length > 0)
+                                _this.send();
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    */
+                } else {
+                    throw (ex);
+                }
+            }
+            if (n <= 0) { // eof
+                break;
+            }
+            this.bufferOut = this.bufferOut.substring(n);
+        }
         return '';
     },
 
     sendNaws: function(str) {
-        if(!this.enable)
+        if (!this.enable)
             return str;
-        var cols = str.charCodeAt(3)*256+str.charCodeAt(4);
-        var rows = str.charCodeAt(5)*256+str.charCodeAt(6);
+        var cols = str.charCodeAt(3) * 256 + str.charCodeAt(4);
+        var rows = str.charCodeAt(5) * 256 + str.charCodeAt(6);
         this.shell.resize_pty(cols, rows);
         return '';
     },
 
     close: function(legitClose) {
-        if(!this.enable)
+        if (!this.enable)
             return;
-        this.client.close(legitClose);
+        if (this.client)
+            this.client.close(legitClose);
     }
 }
+
