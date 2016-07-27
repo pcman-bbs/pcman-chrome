@@ -1,6 +1,6 @@
 {
   "name": "__MSG_appName__",
-  "version": "0.0.6.10",
+  "version": "0.0.6.12",
   "manifest_version": 2,
   "minimum_chrome_version": "33.0",
   "description": "__MSG_appDescription__",
@@ -10,6 +10,7 @@
     "128": "icon128.png"
   },
   "default_locale": "en_US",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDTGlzyoAFp//1XQdRAdE2Anks15eQFNtbSl44Fx2iMSZk0QCMB676/u1Hux7RJ4la36jlRWA/7qIMsV0Bkr1BN6hoWAABFUBv+PLDtsDo+q6i/c1g/VmVqzet954WWVj8IVNn8n3BliEKleClUu6h4VJjYUHBas8Yh4gKsPqmirQIDAQAB",
   "app": {
     "background": {
       "scripts": ["launch.js"]
@@ -24,6 +25,9 @@
     "tcpServer" : {
       "listen" : ":*"
     }
+  },
+  "externally_connectable": {
+    "matches": ["*://pcman-bbs.github.io/*", "*://localhost/*"]
   },
   "permissions": [
     "clipboardRead",
