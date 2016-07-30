@@ -31,6 +31,8 @@ telnetAgent.prototype.create = function(socketId, host, port) {
 
         var onConnected = function(result) {
             _this.callback[socketId]({ action: "connected" });
+            if(result < 0 && chrome.runtime.lastError)
+                return _this.callback[socketId]({ action: "disconnected" });
             _this.telnetSockets[socketId] = createInfo.socketId;
         };
 

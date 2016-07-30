@@ -24,23 +24,24 @@ BrowserComm.prototype.connect = function(conn, host, port) {
         wsUri = wsUri.substr(0, wsUri.indexOf('#'));
     if (wsUri.indexOf('?') >= 0)
         wsUri = wsUri.substr(0, wsUri.indexOf('?'));
-    this.ws = new WebSocket(wsUri);
-    this.ws.binaryType = 'arraybuffer';
+    var ws = new WebSocket(wsUri);
+    ws.binaryType = 'arraybuffer';
 
-    this.ws.onopen = function(event) {
-        if (conn.socket.ws.readyState == 1)
+    ws.onopen = function(event) {
+        if (ws.readyState == 1)
             conn.socket.send(host + ':' + port, 'con');
     };
-    this.ws.onclose = function(event) {
-        conn.socket.ws = null;
-        conn.onStopRequest();
+    ws.onclose = function(event) {
+        ws = null;
+        if (conn.socket.ws) // socket abnormal close
+            conn.onStopRequest();
     };
-    this.ws.onerror = function(event) {
+    ws.onerror = function(event) {
         //conn.listener.ui.debug(event.data);
-        conn.socket.ws = null;
+        ws = null;
         conn.onStopRequest();
     };
-    this.ws.onmessage = function(event) {
+    ws.onmessage = function(event) {
         var data = String.fromCharCode.apply(null, new Uint8Array(event.data));
         var action = data.substr(0, 3);
         var content = data.substr(3);
@@ -63,6 +64,7 @@ BrowserComm.prototype.connect = function(conn, host, port) {
             default:
         }
     };
+    this.ws = ws;
 };
 
 BrowserComm.prototype.send = function(output, action) {
