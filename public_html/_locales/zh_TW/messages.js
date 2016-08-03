@@ -23,6 +23,9 @@ var locale_zh_TW =
   "menu_search": {
     "message": "搜尋"
   },
+  "menu_loadfile": {
+    "message": "載入檔案"
+  },
   "menu_savefile": {
     "message": "另存檔案"
   },

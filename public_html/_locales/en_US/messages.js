@@ -23,6 +23,9 @@ var locale_en_US =
   "menu_search": {
     "message": "Search"
   },
+  "menu_loadfile": {
+    "message": "Load File"
+  },
   "menu_savefile": {
     "message": "Save File"
   },
