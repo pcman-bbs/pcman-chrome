@@ -86,8 +86,8 @@ var locale_zh_TW =
   "options_detectdbcs": {
     "message": "自動偵測雙位元組字集文字"
   },
-  "options_showconntimer": {
-    "message": "顯示連線時間"
+  "options_builtingestures": {
+    "message": "啟用內建滑鼠手勢"
   },
   "options_mousebrowsing": {
     "message": "滑鼠瀏覽"

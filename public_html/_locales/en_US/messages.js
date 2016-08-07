@@ -86,8 +86,8 @@ var locale_en_US =
   "options_detectdbcs": {
     "message": "Detect DBCS words"
   },
-  "options_showconntimer": {
-    "message": "Show connection time"
+  "options_builtingestures": {
+    "message": "Enable built-in gestures"
   },
   "options_mousebrowsing": {
     "message": "Mouse browsing"
