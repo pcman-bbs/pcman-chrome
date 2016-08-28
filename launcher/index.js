@@ -33,7 +33,7 @@
             elem('manually').style.display = 'block';
             return;
         }
-        location.replace(response.url);
+        location.href = response.url;
     });
 };
 
