@@ -21,6 +21,16 @@ onload = function() {
     logger.textContent += log + "\n";
   }
 
+  var applySetting = function(setting) {
+    if(!setting) return;
+    var settings = JSON.parse(setting);
+    var win = chrome.app.window.current();
+    settings.hidden ? win.hide() : win.show();
+    var autoStart = document.getElementById('autoStart');
+    if(settings.setDefault && (settings.hidden != autoStart.checked))
+      autoStart.click(); // Also trigger onchange event
+  };
+
   var server = null;
   var wsServer = null;
   var agent = null;
@@ -60,6 +70,13 @@ onload = function() {
         u2aCache(url.substr(25), function(table) {
           serveStr(url, table);
         });
+      } else if(url.indexOf("/status?setting=") == 0) {
+        // Read or write settings from remote pages
+        applySetting(decodeURIComponent(url.substr(16)));
+        serveStr(url, logger.textContent);
+      } else if(url.indexOf("/server") == 0) {
+        // For remote control
+        req.serveUrl("/httpd/ctrl_remote" + url.substr(7));
       } else {
         // Serve the pages of this chrome application.
         req.serveUrl("/public_html" + url);
@@ -101,12 +118,17 @@ onload = function() {
         case 'con':
           var uri = content.split(":");
           agent.create(socket.socketId_, uri[0], parseInt(uri[1]));
+          socket.hostPort = content;
+          logToScreen("Connect to " + socket.hostPort +
+            " by #" + socket.socketId_);
           break;
         case 'dat':
           agent.send(socket.socketId_, content);
           break;
         case 'dis':
           agent.close(socket.socketId_);
+          logToScreen("Disconnect from " + socket.hostPort +
+            " by #" + socket.socketId_);
           break;
         case "cop":
           systemClipboard(decodeURIComponent(escape(content)));

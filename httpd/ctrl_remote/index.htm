@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC
+"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-US">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>WebSocket Server</title>
+    <link rel="icon" href="icon16.png"/>
+    <!-- build:css styles/app.css -->
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <!-- endbuild -->
+    <script type="text/javascript" src="index.js"></script>
+  </head>
+  <body>
+    <div class="hero-unit">
+      <h1>WebSocket Server</h1>
+       <p>Serving you locally</p>
+       <p>
+         <div class="checkbox"><label><input type="checkbox" id="setDefault"/> Set as default</label></div>
+         <select id="hosts" disabled>
+           <option value="127.0.0.1">lo - 127.0.0.1</option> 
+         </select>
+         <input type="text" id="port" value="8080" disabled/><br />
+         <button id="renew" class="btn btn-primary btn-large">Renew</button>
+         <button id="show" class="btn btn-warning btn-large">Show</button>
+         <button id="hide" class="btn btn-success btn-large">Hide</button>
+       </p>
+    </div>
+    <pre id="logger"></pre>
+  </body>
+</html>
