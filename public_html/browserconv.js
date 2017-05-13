@@ -4,9 +4,13 @@
 
 'use strict';
 
-var EXPORTED_SYMBOLS = ["uaoConv"];
+var EXPORTED_SYMBOLS = ["BrowserConv"];
 
-var uaoConv = {
+function BrowserConv(ui) {
+    this.ui = ui;
+}
+
+BrowserConv.prototype = {
     cache: {},
     buildCache: function(type, charset, callback) {
         var cache = this.cache;
@@ -17,35 +21,26 @@ var uaoConv = {
         if (charset != 'big5')
             url = '/charset/' + type + '.tab?charset=' + charset;
 
-        var req = new XMLHttpRequest();
-        req.open('GET', url, !!callback);
-        if (!!callback) {
-            req.responseType = 'arraybuffer';
-            req.onreadystatechange = function(event) {
-                if (req.readyState != 4)
-                    return;
-                if (req.status == 200) {
-                    cache[type + '_' + charset] = Array.prototype.map.call(
-                        new Uint8Array(req.response),
-                        function(x) {
-                            return String.fromCharCode(x);
-                        }
-                    ).join('');
-                }
-                callback(req.status);
-            };
-            req.send();
-            return;
+        if (callback) {
+            this.ui.read(url, function(ret) {
+                cache[type + '_' + charset] = ret;
+                callback();
+            });
+        } else {
+            cache[type + '_' + charset] = this.ui.read(url);
         }
-        req.overrideMimeType('text\/plain; charset=x-user-defined'); // IE fails
-        req.send();
-        var ret = req.responseText;
-        cache[type + '_' + charset] = ret.split('').map(function(x) {
-            return String.fromCharCode(x.charCodeAt(0) % 0x100);
-        }).join('');
     },
 
+    conv: null,
     convertStringToUTF8: function(data, charset, skipCheck, allowSubstitution) {
+        if (Components && Components.classes && charset.toLowerCase() != 'big5') {
+            if (!this.conv) {
+                this.conv = Components.classes["@mozilla.org/intl/utf8converterservice;1"]
+                    .getService(Components.interfaces.nsIUTF8ConverterService);
+            }
+            return this.conv.convertStringToUTF8(data, charset, skipCheck, allowSubstitution);
+        }
+
         if (!this.cache['a2u_' + charset])
             this.buildCache('a2u', charset); // sync building, which fails in IE
 
@@ -66,9 +61,19 @@ var uaoConv = {
         return ret;
     },
 
+    oconv: null,
     charset: '',
     ConvertFromUnicode: function(str) {
         var charset = this.charset;
+
+        if (Components && Components.classes && charset.toLowerCase() != 'big5') {
+            if (!this.oconv) {
+                this.oconv = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+                    .createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+            }
+            this.oconv.charset = charset;
+            return this.oconv.ConvertFromUnicode(str);
+        }
 
         if (!this.cache['u2a_' + charset])
             this.buildCache('u2a', charset); // sync building, which fails in IE

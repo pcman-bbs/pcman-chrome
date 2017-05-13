@@ -41,7 +41,9 @@ chrome.runtime.onMessageExternal.addListener(function msg(request, sender, sendR
         return server.contentWindow.document.getElementById(id);
     };
     if (!elem('start').disabled && elem('stop').disabled) {
-        sendResponse({ url: '' }); // need manually starting httpd
+        sendResponse({
+            url: ''
+        }); // need manually starting httpd
         return;
     }
     var port = parseInt(elem('port').value);
@@ -50,6 +52,8 @@ chrome.runtime.onMessageExternal.addListener(function msg(request, sender, sendR
         search = request.url.substr(request.url.indexOf('?'));
     else if (request.url.indexOf('#') != -1)
         search = request.url.substr(request.url.indexOf('#'));
-    sendResponse({ url: 'http://localhost:' + port + '/' + search });
+    sendResponse({
+        url: 'http://localhost:' + port + '/' + search
+    });
 });
 

@@ -41,7 +41,10 @@ var arrayBufferToString = function(buffer) {
  */
 var stringToArrayBuffer = function(string) {
   return (new Uint8Array(Array.prototype.map.call(
-    string, function(x) { return x.charCodeAt(0); }
+    string,
+    function(x) {
+      return x.charCodeAt(0);
+    }
   ))).buffer;
 };
 
@@ -132,7 +135,7 @@ HttpServer.prototype = {
    */
   listen: function(port, opt_host) {
     var t = this;
-    chrome.sockets.tcpServer.create({}, function (socketInfo) {
+    chrome.sockets.tcpServer.create({}, function(socketInfo) {
       t.socketInfo_ = socketInfo;
       chrome.sockets.tcpServer.listen(t.socketInfo_.socketId, opt_host || '0.0.0.0', port, 50, function(result) {
         t.readyState_ = 1;
@@ -149,7 +152,7 @@ HttpServer.prototype = {
     chrome.sockets.tcpServer.onAccept.removeListener(this.acceptConnection_);
     chrome.sockets.tcp.onReceive.removeListener(this.onReceive_);
     chrome.sockets.tcp.onReceiveError.removeListener(this.onReceiveError_);
-    for(var socketId in this.clientSockets) {
+    for (var socketId in this.clientSockets) {
       this.closeClientSocket_(parseInt(socketId));
     }
     this.clientSockets = {};
@@ -159,14 +162,17 @@ HttpServer.prototype = {
     var t = this;
     this.acceptConnection_ = function(acceptInfo) {
       var socketId = acceptInfo.clientSocketId;
-      t.clientSockets[socketId] = { requestData: '', endIndex: 0 };
+      t.clientSockets[socketId] = {
+        requestData: '',
+        endIndex: 0
+      };
       chrome.sockets.tcp.setPaused(socketId, false);
     };
     return this.acceptConnection_;
   },
 
   closeClientSocket_: function(socketId) {
-    if(!this.clientSockets[socketId])
+    if (!this.clientSockets[socketId])
       return;
     chrome.sockets.tcp.disconnect(socketId);
     chrome.sockets.tcp.close(socketId);
@@ -191,7 +197,10 @@ HttpServer.prototype = {
       }
 
       var headers = t.clientSockets[socketId].requestData.substring(0, t.clientSockets[socketId].endIndex).split('\n');
-      t.clientSockets[socketId] = { requestData: '', endIndex: 0 };
+      t.clientSockets[socketId] = {
+        requestData: '',
+        endIndex: 0
+      };
       var headerMap = {};
       // headers[0] should be the Request-Line
       var requestLine = headers[0].split(' ');
@@ -264,9 +273,9 @@ function HttpRequest(headers, socketId, httpServer) {
   this.readyState = 1;
   this.httpServer = httpServer;
 
-  if(this.headers['Connection']) // For MSIE
+  if (this.headers['Connection']) // For MSIE
     this.headers['Connection'] = this.headers['Connection'].toLowerCase();
-  if(this.headers['Upgrade']) // For MSIE
+  if (this.headers['Upgrade']) // For MSIE
     this.headers['Upgrade'] = this.headers['Upgrade'].toLowerCase();
 }
 
@@ -363,13 +372,13 @@ HttpRequest.prototype = {
       if (this.getResponseHeader('Content-Type')) {
         type = this.getResponseHeader('Content-Type');
       } else if (url.indexOf('.') != -1) {
-        if(url.indexOf('?') != -1)
+        if (url.indexOf('?') != -1)
           var extension = url.substring(url.indexOf('.') + 1, url.indexOf('?'));
         else
           var extension = url.substr(url.indexOf('.') + 1);
         type = extensionTypes[extension] || type;
       }
-      if(!t.httpServer.dispatchEvent('log', url))
+      if (!t.httpServer.dispatchEvent('log', url))
         console.log('Served ' + url);
       var contentLength = this.getResponseHeader('Content-Length');
       if (xhr.status == 200)
@@ -387,7 +396,7 @@ HttpRequest.prototype = {
   write_: function(array) {
     var t = this;
     this.bytesRemaining += array.byteLength;
-    chrome.sockets.tcp.send(this.socketId_, array, function (sendInfo) {
+    chrome.sockets.tcp.send(this.socketId_, array, function(sendInfo) {
       if (sendInfo.resultCode < 0) {
         console.error('Error writing to socket, code ' + sendInfo.resultCode);
         return;
@@ -533,12 +542,12 @@ WebSocketServerSocket.prototype = {
    * @param {string} data The data to send over the WebSocket.
    */
   send: function(data) {
-    if(data instanceof ArrayBuffer)
-        this.sendFrame_(2, arrayBufferToString(data));
-    else if(typeof(data) === 'string' && this.binaryType == 'arraybuffer')
-        this.sendFrame_(2, data);
+    if (data instanceof ArrayBuffer)
+      this.sendFrame_(2, arrayBufferToString(data));
+    else if (typeof(data) === 'string' && this.binaryType == 'arraybuffer')
+      this.sendFrame_(2, data);
     else
-        this.sendFrame_(1, data);
+      this.sendFrame_(1, data);
     // Blob is not supported yet
   },
 
@@ -559,7 +568,7 @@ WebSocketServerSocket.prototype = {
     var fragmentedOp = 0;
     var fragmentedMessage = '';
 
-    var onReceiveError_ = function (readInfo) {
+    var onReceiveError_ = function(readInfo) {
       if (t.socketId_ !== readInfo.socketId)
         return;
 

@@ -21,7 +21,9 @@
         if (event.key == 'appId')
             elem('appId').value = event.newValue || defaultId;
     });
-    var request = { url: location.href };
+    var request = {
+        url: location.href
+    };
     chrome.runtime.sendMessage(appId, request, function(response) {
         if (!response) {
             elem('wait').style.display = 'none';
