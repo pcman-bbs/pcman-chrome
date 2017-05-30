@@ -3,7 +3,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * Modified by u881831 < u881831@hotmail.com > at 2014/07/14
+ * Modified by u881831 < u881831@hotmail.com >
+ * 2014/07/14: Replace deprecated chrome.socket by chrome.sockets
+ * 2017/05/30: Add APIs similar to those of Node.js
  **/
 
 var http = function() {
@@ -55,6 +57,14 @@ var stringToArrayBuffer = function(string) {
  */
 function EventSource() {
   this.listeners_ = {};
+
+  // Node.js API
+  this.on = function(eventName, listener) {
+    this.addEventListener(eventName, listener);
+    return this;
+  };
+  this.removeListener = this.removeEventListener;
+  this.emit = this.dispatchEvent;
 };
 
 EventSource.prototype = {
@@ -114,13 +124,16 @@ EventSource.prototype = {
  * supports GET requests and upgrading to other protocols (i.e. WebSockets).
  * @constructor
  */
-function HttpServer() {
+function HttpServer(requestListener) {
   EventSource.apply(this);
   this.readyState_ = 0;
 
   this.clientSockets = {};
   this.onReceiveHandlers = {};
   this.onReceiveErrorHandlers = {};
+
+  if (requestListener)
+    this.on('request', requestListener);
 }
 
 HttpServer.prototype = {
@@ -145,17 +158,19 @@ HttpServer.prototype = {
         chrome.sockets.tcp.onReceiveError.addListener(t.onReceiveErrorGenerator_());
       });
     });
-
+    return this;
   },
 
-  close: function() {
+  close: function(callback) {
     chrome.sockets.tcpServer.onAccept.removeListener(this.acceptConnection_);
+    chrome.sockets.tcpServer.disconnect(this.socketInfo_.socketId);
     chrome.sockets.tcp.onReceive.removeListener(this.onReceive_);
     chrome.sockets.tcp.onReceiveError.removeListener(this.onReceiveError_);
     for (var socketId in this.clientSockets) {
       this.closeClientSocket_(parseInt(socketId));
     }
     this.clientSockets = {};
+    callback ? callback() : '';
   },
 
   acceptConnectionGenerator_: function() {
@@ -206,7 +221,7 @@ HttpServer.prototype = {
       var requestLine = headers[0].split(' ');
       headerMap['method'] = requestLine[0];
       headerMap['url'] = requestLine[1];
-      headerMap['Http-Version'] = requestLine[2];
+      headerMap['httpVersion'] = requestLine[2];
       for (var i = 1; i < headers.length; i++) {
         requestLine = headers[i].split(':', 2);
         if (requestLine.length == 2)
@@ -235,7 +250,7 @@ HttpServer.prototype = {
   onRequest_: function(request) {
     var type = request.headers['Upgrade'] ? 'upgrade' : 'request';
     var keepAlive = request.headers['Connection'] == 'keep-alive';
-    if (!this.dispatchEvent(type, request))
+    if (!this.dispatchEvent(type, request, request))
       request.close();
     else if (!keepAlive)
       this.closeClientSocket_(request.socketId_);
@@ -264,6 +279,12 @@ var extensionTypes = {
 function HttpRequest(headers, socketId, httpServer) {
   this.version = 'HTTP/1.1';
   this.headers = headers;
+
+  // Node.js API
+  this.httpVersion = headers.httpVersion;
+  this.method = headers.method;
+  this.url = headers.url;
+
   this.responseHeaders_ = {};
   this.headersSent = false;
   this.socketId_ = socketId;
@@ -421,6 +442,10 @@ HttpRequest.prototype = {
  */
 function WebSocketServer(httpServer) {
   EventSource.apply(this);
+
+  if (httpServer.server)
+    httpServer = httpServer.server;
+
   httpServer.addEventListener('upgrade', this.upgradeToWebSocket_.bind(this));
   this.connectedSockets = [];
   this.httpServer = httpServer;
@@ -429,10 +454,11 @@ function WebSocketServer(httpServer) {
 WebSocketServer.prototype = {
   __proto__: EventSource.prototype,
 
-  close: function() {
+  close: function(callback) {
     var connectedSockets = this.connectedSockets;
     for (var i = 0; i < connectedSockets.length; i++)
       connectedSockets[i].close();
+    callback ? callback() : '';
   },
 
   upgradeToWebSocket_: function(request) {
@@ -441,7 +467,10 @@ WebSocketServer.prototype = {
       return false;
     }
 
-    if (this.dispatchEvent('request', new WebSocketRequest(request, this))) {
+    var wsr = new WebSocketRequest(request, this);
+    var reject = this.dispatchEvent('request', wsr) ||
+      this.dispatchEvent('connection', wsr.accept(), wsr);
+    if (reject) {
       if (request.socketId_)
         request.reject();
       return true;
@@ -647,18 +676,23 @@ WebSocketServerSocket.prototype = {
   },
 
   onFrame_: function(op, data) {
-    if (op == 1) { // text data
+    if (op == 1) { // text data, incompatible with ws module in Node.js
       this.dispatchEvent('message', {
         'type': 'utf8',
         'data': data, // for compatibility
         'utf8Data': decodeURIComponent(escape(data))
       });
     } else if (op == 2) { // binary data
-      this.dispatchEvent('message', {
+      var assign = function(target, source) {
+        for (var key in source)
+          target[key] = source[key];
+        return target;
+      };
+      this.dispatchEvent('message', assign(stringToArrayBuffer(data), {
         'type': 'binary',
         'data': data, // for compatibility
         'binaryData': stringToArrayBuffer(data)
-      });
+      }));
     } else if (op == 8) {
       // A close message must be confirmed before the websocket is closed.
       if (this.readyState == 1) {
@@ -734,3 +768,4 @@ return {
   'WebSocketServer': WebSocketServer,
 };
 }();
+

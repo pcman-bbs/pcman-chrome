@@ -1,6 +1,6 @@
 {
   "name": "__MSG_appName__",
-  "version": "0.0.6.16",
+  "version": "0.0.6.17",
   "manifest_version": 2,
   "minimum_chrome_version": "33.0",
   "description": "__MSG_appDescription__",
@@ -16,8 +16,6 @@
       "scripts": ["launch.js"]
     }
   },
-  //"options_page": "options.htm",
-  //"update_url": "http://path/to/updateInfo.xml",
   "sockets": {
     "tcp" : {
       "connect": "*:*"
