@@ -181,6 +181,24 @@ Server.prototype = {
         _this.cache('u2a', url.substr(25), function(table) {
           _this.serve(res, url, table);
         });
+      } else if (url.indexOf('/clipboard?copy=') == 0) {
+        _this.clipboard(function() {
+          _this.serve(res, url, 'copied successfully');
+        }, decodeURIComponent(url.substr(16)));
+      } else if (url.indexOf('/clipboard?appe=') == 0) {
+        _this.clipboard(function(err, str) {
+          if (err)
+            return;
+          _this.clipboard(function() {
+            _this.serve(res, url, 'copied successfully');
+          }, str + decodeURIComponent(url.substr(16)));
+        });
+      } else if (url.indexOf('/clipboard') == 0) {
+        _this.clipboard(function(err, str) {
+          if (err)
+            return;
+          _this.serve(res, url, encodeURIComponent(str));
+        });
       } else if (url.indexOf('/status?setting=') == 0) {
         // Read or write settings from remote pages
         _this.applySetting(decodeURIComponent(url.substr(16)));
@@ -256,18 +274,6 @@ Server.prototype = {
             _this.log('Disconnect from ' + uri + ' by #' + socketId);
             telnet.destroy();
             _this.telnets[socketId] = null;
-            break;
-          case 'cop':
-            _this.clipboard(function() {
-              ws.send(output('cop'));
-            }, decodeURIComponent(escape(content)));
-            break;
-          case 'pas':
-            _this.clipboard(function(err, str) {
-              if (err)
-                return;
-              ws.send(output('pas' + unescape(encodeURIComponent(str))));
-            });
             break;
           default:
         }
