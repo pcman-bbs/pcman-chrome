@@ -22,6 +22,22 @@ function Server(port, host) {
     http: require('http'),
     netSocket: require('net').Socket
   };
+  if (typeof(__dirname) != 'undefined') {
+    var fs = this.mod['fs'];
+    var key = __dirname + '/https-key.pem';
+    var cert = __dirname + '/https-cert.pem';
+    if (fs.existsSync(key) && fs.existsSync(cert)) {
+      this.mod['http'] = {
+        createServer: function(requestListener) {
+          return require('https').createServer({
+            key: fs.readFileSync(key),
+            cert: fs.readFileSync(cert)
+          }, requestListener);
+        }
+      };
+    }
+  }
+
   this.httpServer = null;
   this.wsServer = null;
   this.socketIds = 0;
