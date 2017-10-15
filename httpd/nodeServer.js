@@ -220,66 +220,45 @@ Server.prototype = {
       clientTracking: true,
       server: httpServer
     });
-    wsServer.on('connection', function(ws) {
+    wsServer.on('connection', function(ws, req) {
       ws.binaryType = 'arraybuffer';
       var socketId = _this.socketIds++;
+      var str2ab = function(str) {
+        return (new Uint8Array(Array.prototype.map.call(str, function(x) {
+          return x.charCodeAt(0);
+        }))).buffer;
+      };
+      var ab2str = function(ab) {
+        return String.fromCharCode.apply(null, new Uint8Array(ab));
+      };
       var uri = 'ptt.cc:23';
-      _this.log('WebSocket client #' + socketId + ' connected');
+      if (req.url.indexOf('/hostPort_') > -1)
+        uri = req.url.substr(req.url.indexOf('/hostPort_') + 10);
+      var hostPort = uri.split(':');
+      var telnet = new _this.mod['netSocket']();
+      telnet.connect(parseInt(hostPort[1]), hostPort[0], function() {
+        ws.send(str2ab(''));
+      });
+      telnet.on('data', function(data) {
+        ws.send(data.buffer);
+      });
+      telnet.on('close', function() {
+        if (ws.readyState > 1)
+          return;
+        ws.close(1000, 'Normal Closure');
+      });
+      telnet.on('error', function(desc) {
+        if (ws.readyState > 1)
+          return;
+        ws.close(1005, desc);
+      });
+      _this.telnets[socketId] = telnet;
+      _this.log('WebSocket client #' + socketId + ' connects to ' + uri);
       ws.on('message', function(data) {
-        var output = function(act, con) {
-          return con ? (act + con) : act;
-        };
-        if (typeof(data) == 'object') {
-          data = String.fromCharCode.apply(null, new Uint8Array(data));
-          output = function(act, con) {
-            return new Uint8Array(Array.prototype.map.call(
-              act + (con ? String.fromCharCode.apply(null, con) : ''),
-              function(x) {
-                return x.charCodeAt(0);
-              }
-            )).buffer;
-          };
-        }
-        var action = data.substr(0, 3);
-        var content = data.substr(3);
-        switch (action) {
-          case 'con':
-            uri = content;
-            var hostPort = uri.split(':');
-            var telnet = new _this.mod['netSocket']();
-            telnet.connect(parseInt(hostPort[1]), hostPort[0], function() {
-              ws.send(output('con'));
-            });
-            telnet.on('data', function(data) {
-              ws.send(output('dat', data));
-            });
-            telnet.on('close', function() {
-              if (ws.readyState > 1)
-                return;
-              ws.send(output('dis'));
-            });
-            telnet.on('error', function() {
-              if (ws.readyState > 1)
-                return;
-              ws.send(output('dis'));
-            });
-            _this.telnets[socketId] = telnet;
-            _this.log('Connect to ' + uri + ' by #' + socketId);
-            break;
-          case 'dat':
-            _this.telnets[socketId].write(content, 'binary');
-            break;
-          case 'dis':
-            var telnet = _this.telnets[socketId];
-            _this.log('Disconnect from ' + uri + ' by #' + socketId);
-            telnet.destroy();
-            _this.telnets[socketId] = null;
-            break;
-          default:
-        }
+        _this.telnets[socketId].write(ab2str(data), 'binary');
       });
       ws.on('close', function() {
-        _this.log('WebSocket client #' + socketId + ' disconnected');
+        _this.log('WebSocket client #' + socketId + ' disconnects from ' + uri);
         if (_this.telnets[socketId]) {
           _this.telnets[socketId].destroy();
           _this.telnets[socketId] = null;
